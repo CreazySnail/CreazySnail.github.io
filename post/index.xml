@@ -9,11 +9,26 @@
     <lastBuildDate>Sat, 24 Apr 2021 11:46:52 +0800</lastBuildDate><atom:link href="https://creazysnail.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Blog0</title>
+      <link>https://creazysnail.github.io/post/threadlocal%E5%88%86%E6%9E%90/</link>
+      <pubDate>Sat, 24 Apr 2021 11:46:52 +0800</pubDate>
+      
+      <guid>https://creazysnail.github.io/post/threadlocal%E5%88%86%E6%9E%90/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ThreadLocal分析</title>
       <link>https://creazysnail.github.io/post/blog0/</link>
       <pubDate>Sat, 24 Apr 2021 11:46:52 +0800</pubDate>
       
       <guid>https://creazysnail.github.io/post/blog0/</guid>
-      <description></description>
+      <description>前言 ThreadLocal是我们在写Java代码中常用的一个类，我们用它保存跨多个方法的变量。
+举例，方法A调用方法B，方法B调用方法C，方法C需要方法A的一个参数，如果通过方法入参传递，需要修改方法B、方法C的入参，使用ThreadLocal后，只需要在方法A set，方法C get即可。
+相关类 ThreadLocalMap 专门为线程本地变量定制的Map；与此对应，Thread对象中有一个参数对应该类。
+ ThreadLocal.ThreadLocalMap threadLocals = null; Entry 继承WeakReference&amp;lt;ThreadLocal&amp;lt;?&amp;raquo;，这样当key也就是ThreadLocal在Entry之外没有强引用之后，可以被gc回收。
+ public static void main(String[] args) { String uuid = UUID.randomUUID().toString(); WeakReference&amp;lt;String&amp;gt; b = new WeakReference&amp;lt;&amp;gt;(uuid); System.gc(); System.out.println(uuid); // xxx System.out.println(b.get()); // xxx System.out.println(&amp;quot;---&amp;quot;); uuid = null; System.gc(); System.out.println(uuid); // null System.out.println(b.get()); // null } 可以看到，当我们把uuid强引用移除且gc后，uuid会被回收，不会因为b中key指向uuid而继续存在。
+问题 ThreadLocal是否线程安全？ ThreadLocal是线程安全的。
+ ThreadLocal&amp;lt;Object&amp;gt; local = new ThreadLocal&amp;lt;&amp;gt;(); local.set(&amp;quot;a&amp;quot;); public void set(T value) { Thread t = Thread.currentThread(); ThreadLocalMap map = getMap(t); if (map !</description>
     </item>
     
   </channel>
