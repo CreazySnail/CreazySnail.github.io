@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on creazy snail的博客</title>
+    <title>Posts on creazy snail</title>
     <link>https://creazysnail.github.io/post/</link>
-    <description>Recent content in Posts on creazy snail的博客</description>
+    <description>Recent content in Posts on creazy snail</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 24 Apr 2021 11:46:52 +0800</lastBuildDate><atom:link href="https://creazysnail.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 24 Apr 2021 16:42:32 +0800</lastBuildDate><atom:link href="https://creazysnail.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Disruptor使用</title>
+      <link>https://creazysnail.github.io/post/disruptor%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Sat, 24 Apr 2021 16:42:32 +0800</pubDate>
+      
+      <guid>https://creazysnail.github.io/post/disruptor%E4%BD%BF%E7%94%A8/</guid>
+      <description>前言: Disruptor是英国外汇交易公司LMAX开发的一个高性能队列，用于解决内存队列延迟问题；在学习过程中发现网上资料不全，故整理demo如下。
+ maven引入  &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;com.lmax&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;disruptor&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;3.4.3&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 元素类 public class Element { private int value; public int get() { return value; } public void set(int value) { this.value = value; } } 广播模式  EventFactory&amp;lt;Element&amp;gt; eventFactory = () -&amp;gt; new Element(); int bufferSize = 16; ThreadFactory threadFactory = r -&amp;gt; new Thread(r, &amp;quot;consumer thread&amp;quot;); BlockingWaitStrategy strategy = new BlockingWaitStrategy(); Disruptor&amp;lt;Element&amp;gt; disruptor = new Disruptor(eventFactory, bufferSize, threadFactory, ProducerType.</description>
+    </item>
+    
     <item>
       <title>ThreadLocal分析</title>
       <link>https://creazysnail.github.io/post/threadlocal%E5%88%86%E6%9E%90/</link>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en-us">
   <head>
-    <title>ThreadLocal分析 // creazy snail的博客</title>
+    <title>ThreadLocal分析 // creazy snail</title>
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta charset="utf-8" />
     <meta name="generator" content="Hugo 0.82.1" />
@@ -40,7 +40,7 @@
   <body>
     <header class="app-header">
       <a href="https://creazysnail.github.io"><img class="app-header-avatar" src="/avatar.jpg" alt="creazy snail" /></a>
-      <h1>creazy snail的博客</h1>
+      <h1>creazy snail</h1>
       <p>分享知识</p>
     </header>
     <main class="app-container">
@@ -152,31 +152,31 @@
 <table>
 <thead>
 <tr>
-<th>ThreadLocal</th>
-<th>线程</th>
-<th>内存泄露</th>
+<th style="text-align:center">ThreadLocal</th>
+<th style="text-align:center">线程</th>
+<th style="text-align:center">内存泄露</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>存在</td>
-<td>存在</td>
-<td>Entry不会被回收，内存泄露</td>
+<td style="text-align:center">存在</td>
+<td style="text-align:center">存在</td>
+<td style="text-align:center">Entry不会被回收，内存泄露</td>
 </tr>
 <tr>
-<td>不存在</td>
-<td>不存在</td>
-<td>Entry回收，不会内存泄漏</td>
+<td style="text-align:center">不存在</td>
+<td style="text-align:center">不存在</td>
+<td style="text-align:center">Entry回收，不会内存泄漏</td>
 </tr>
 <tr>
-<td>不存在</td>
-<td>存在</td>
-<td>Entry中的key为空，回收时间不确定，可能内存泄露</td>
+<td style="text-align:center">不存在</td>
+<td style="text-align:center">存在</td>
+<td style="text-align:center">Entry中的key为空，回收时间不确定，可能内存泄露</td>
 </tr>
 <tr>
-<td>存在</td>
-<td>不存在</td>
-<td>Entry被回收，不会内存泄露</td>
+<td style="text-align:center">存在</td>
+<td style="text-align:center">不存在</td>
+<td style="text-align:center">Entry被回收，不会内存泄露</td>
 </tr>
 </tbody>
 </table>

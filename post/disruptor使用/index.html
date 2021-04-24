@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>Disruptor使用 // creazy snail</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.82.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="creazy snail" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="https://creazysnail.github.io/css/main.min.88e7083eff65effb7485b6e6f38d10afbec25093a6fac42d734ce9024d3defbd.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Disruptor使用"/>
+<meta name="twitter:description" content="前言: Disruptor是英国外汇交易公司LMAX开发的一个高性能队列，用于解决内存队列延迟问题；在学习过程中发现网上资料不全，故整理demo如下。
+ maven引入  &lt;dependency&gt; &lt;groupId&gt;com.lmax&lt;/groupId&gt; &lt;artifactId&gt;disruptor&lt;/artifactId&gt; &lt;version&gt;3.4.3&lt;/version&gt; &lt;/dependency&gt; 元素类 public class Element { private int value; public int get() { return value; } public void set(int value) { this.value = value; } } 广播模式  EventFactory&lt;Element&gt; eventFactory = () -&gt; new Element(); int bufferSize = 16; ThreadFactory threadFactory = r -&gt; new Thread(r, &quot;consumer thread&quot;); BlockingWaitStrategy strategy = new BlockingWaitStrategy(); Disruptor&lt;Element&gt; disruptor = new Disruptor(eventFactory, bufferSize, threadFactory, ProducerType."/>
+
+    <meta property="og:title" content="Disruptor使用" />
+<meta property="og:description" content="前言: Disruptor是英国外汇交易公司LMAX开发的一个高性能队列，用于解决内存队列延迟问题；在学习过程中发现网上资料不全，故整理demo如下。
+ maven引入  &lt;dependency&gt; &lt;groupId&gt;com.lmax&lt;/groupId&gt; &lt;artifactId&gt;disruptor&lt;/artifactId&gt; &lt;version&gt;3.4.3&lt;/version&gt; &lt;/dependency&gt; 元素类 public class Element { private int value; public int get() { return value; } public void set(int value) { this.value = value; } } 广播模式  EventFactory&lt;Element&gt; eventFactory = () -&gt; new Element(); int bufferSize = 16; ThreadFactory threadFactory = r -&gt; new Thread(r, &quot;consumer thread&quot;); BlockingWaitStrategy strategy = new BlockingWaitStrategy(); Disruptor&lt;Element&gt; disruptor = new Disruptor(eventFactory, bufferSize, threadFactory, ProducerType." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://creazysnail.github.io/post/disruptor%E4%BD%BF%E7%94%A8/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-04-24T16:42:32&#43;08:00" />
+<meta property="article:modified_time" content="2021-04-24T16:42:32&#43;08:00" />
+
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://creazysnail.github.io"><img class="app-header-avatar" src="/avatar.jpg" alt="creazy snail" /></a>
+      <h1>creazy snail</h1>
+      <p>分享知识</p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Disruptor使用</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 24, 2021
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <blockquote>
+<p>前言: Disruptor是英国外汇交易公司LMAX开发的一个高性能队列，用于解决内存队列延迟问题；在学习过程中发现网上资料不全，故整理demo如下。</p>
+</blockquote>
+<h1 id="maven引入">maven引入</h1>
+<pre><code>        &lt;dependency&gt;
+            &lt;groupId&gt;com.lmax&lt;/groupId&gt;
+            &lt;artifactId&gt;disruptor&lt;/artifactId&gt;
+            &lt;version&gt;3.4.3&lt;/version&gt;
+        &lt;/dependency&gt;
+</code></pre><h1 id="元素类">元素类</h1>
+<pre><code>public class Element {
+
+    private int value;
+
+    public int get() {
+        return value;
+    }
+
+    public void set(int value) {
+        this.value = value;
+    }
+}
+</code></pre><h1 id="广播模式">广播模式</h1>
+<pre><code>        EventFactory&lt;Element&gt; eventFactory = () -&gt; new Element();
+
+        int bufferSize = 16;
+
+        ThreadFactory threadFactory = r -&gt; new Thread(r, &quot;consumer thread&quot;);
+
+        BlockingWaitStrategy strategy = new BlockingWaitStrategy();
+
+        Disruptor&lt;Element&gt; disruptor = new Disruptor(eventFactory, bufferSize, threadFactory, ProducerType.SINGLE, strategy);
+
+        EventHandler&lt;Element&gt; eventHandler = (event, sequence, endOfBatch) -&gt; System.out.println(Thread.currentThread().getId() + &quot; &quot; + Thread.currentThread().getName() + &quot; &quot; + &quot;element: &quot; + event.get());
+
+        disruptor.handleEventsWith(eventHandler);
+
+        disruptor.start();
+
+        // 生产者写入数据到队列
+        RingBuffer&lt;Element&gt; ringBuffer = disruptor.getRingBuffer();
+        for (int i = 0; i &lt; 100; i++) {
+            long sequence = ringBuffer.next();
+            Element element = ringBuffer.get(sequence);
+            element.set(i);
+            ringBuffer.publish(sequence);
+            Thread.sleep(10L);
+        }
+</code></pre><p>此模式下所有事件处理器eventHandler都会收到事件消息。</p>
+<h1 id="图模式事件处理器之间存在先后顺序">图模式(事件处理器之间存在先后顺序)</h1>
+<pre><code>        EventFactory&lt;Element&gt; eventFactory = () -&gt; new Element();
+
+        int bufferSize = 16;
+
+        ThreadFactory threadFactory = r -&gt; new Thread(r, &quot;consumer thread&quot;);
+
+        BlockingWaitStrategy strategy = new BlockingWaitStrategy();
+
+        Disruptor&lt;Element&gt; disruptor = new Disruptor(eventFactory, bufferSize, threadFactory, ProducerType.SINGLE, strategy);
+
+        EventHandler&lt;Element&gt; eventHandler0 = (event, sequence, endOfBatch) -&gt; System.out.println(Thread.currentThread().getId() + &quot; handler 0 &quot; + &quot;element: &quot; + event.get());
+        EventHandler&lt;Element&gt; eventHandler1 = (event, sequence, endOfBatch) -&gt; System.out.println(Thread.currentThread().getId() + &quot; handler 1 &quot; + &quot;element: &quot; + event.get());
+        EventHandler&lt;Element&gt; eventHandler2 = (event, sequence, endOfBatch) -&gt; System.out.println(Thread.currentThread().getId() + &quot; handler 2 &quot; + &quot;element: &quot; + event.get());
+
+        // 顺序执行
+//        disruptor.handleEventsWith(eventHandler0).handleEventsWith(eventHandler1).handleEventsWith(eventHandler2);
+
+        // 并行执行
+//        disruptor.handleEventsWith(eventHandler0, eventHandler1, eventHandler2);
+
+        // 0 - 1  1 - 2
+        disruptor.handleEventsWith(eventHandler0);
+        disruptor.after(eventHandler0).handleEventsWith(eventHandler1);
+        disruptor.after(eventHandler1).handleEventsWith(eventHandler2);
+
+        disruptor.start();
+
+        RingBuffer&lt;Element&gt; ringBuffer = disruptor.getRingBuffer();
+        for (int i = 0; i &lt; 10; i++) {
+            long sequence = ringBuffer.next();
+            Element element = ringBuffer.get(sequence);
+            element.set(i);
+            ringBuffer.publish(sequence);
+            Thread.sleep(10L);
+        }
+</code></pre><p>可以设置顺序关系、并行关系</p>
+<h1 id="集群消费模式单个消息只被消费一次">集群消费模式(单个消息只被消费一次)</h1>
+<pre><code>        EventFactory&lt;Element&gt; eventFactory = () -&gt; new Element();
+
+        int bufferSize = 16;
+
+        ThreadFactory threadFactory = r -&gt; new Thread(r, &quot;consumer thread&quot;);
+
+        BlockingWaitStrategy strategy = new BlockingWaitStrategy();
+
+        Disruptor&lt;Element&gt; disruptor = new Disruptor(eventFactory, bufferSize, threadFactory, ProducerType.SINGLE, strategy);
+
+        WorkHandler&lt;Element&gt; workHandler0 = event -&gt; System.out.println(Thread.currentThread().getId() + &quot; work handler 0 &quot; + &quot;element: &quot; + event.get());
+        WorkHandler&lt;Element&gt; workHandler1 = event -&gt; System.out.println(Thread.currentThread().getId() + &quot; work handler 1 &quot; + &quot;element: &quot; + event.get());
+        WorkHandler&lt;Element&gt; workHandler2 = event -&gt; System.out.println(Thread.currentThread().getId() + &quot; work handler 2 &quot; + &quot;element: &quot; + event.get());
+
+        disruptor.handleEventsWithWorkerPool(new WorkHandler[] {workHandler0, workHandler1, workHandler2});
+
+        disruptor.start();
+
+        RingBuffer&lt;Element&gt; ringBuffer = disruptor.getRingBuffer();
+        for (int i = 0; i &lt; 10; i++) {
+            long sequence = ringBuffer.next();
+            Element element = ringBuffer.get(sequence);
+            element.set(i);
+            ringBuffer.publish(sequence);
+            Thread.sleep(10L);
+        }
+</code></pre><hr>
+<p><a href="https://github.com/LMAX-Exchange/disruptor">disruptor github</a></p>
+<p><a href="https://tech.meituan.com/2016/11/18/disruptor.html">高性能队列——Disruptor</a></p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
