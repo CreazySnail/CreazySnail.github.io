@@ -6,7 +6,45 @@
     <description>Recent content in Posts on creazy snail</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 24 Apr 2021 16:42:32 +0800</lastBuildDate><atom:link href="https://creazysnail.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 25 Apr 2021 21:43:56 +0800</lastBuildDate><atom:link href="https://creazysnail.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RocketMQ小结</title>
+      <link>https://creazysnail.github.io/post/rocketmq%E5%B0%8F%E7%BB%93/</link>
+      <pubDate>Sun, 25 Apr 2021 21:43:56 +0800</pubDate>
+      
+      <guid>https://creazysnail.github.io/post/rocketmq%E5%B0%8F%E7%BB%93/</guid>
+      <description>背景: 最近在写公司内部的RocketMQ开发指南，特记录一些感想。
+ 结构简单，服务高可用 
+纵观RocketMQ的整体架构图，只有NameServer BrokerServer 2个角色。
+NameServer NameServer是一个非常简单的Topic路由注册中心，其角色类似Dubbo中的zookeeper，支持Broker的动态注册与发现。主要包括两个功能：Broker管理，NameServer接受Broker集群的注册信息并且保存下来作为路由信息的基本数据。然后提供心跳检测机制，检查Broker是否还存活；路由信息管理，每个NameServer将保存关于Broker集群的整个路由信息和用于客户端查询的队列信息。然后Producer和Conumser通过NameServer就可以知道整个Broker集群的路由信息，从而进行消息的投递和消费。NameServer通常也是集群的方式部署，各实例间相互不进行信息通讯。Broker是向每一台NameServer注册自己的路由信息，所以每一个NameServer实例上面都保存一份完整的路由信息。当某个NameServer因某种原因下线了，Broker仍然可以向其它NameServer同步其路由信息，Producer,Consumer仍然可以动态感知Broker的路由的信息。
+BrokerServer Broker主要负责消息的存储、投递和查询以及服务高可用保证。
+如何保证服务高可用 NameServer部署多个节点，只要有&amp;gt;=1个节点存活，服务正常。
+Broker采用多Master-Slave模式，只要&amp;gt;=1个Master节点存活，服务正常。
+NameServer存在的问题 消费方、发送方、Broker都要和每一个NameServer交互，NameServer数量越大，交互越多，幸好RocketMQ集群规模不大，所以此问题可以忽略。
+Dledger集群 传统的Broker Master-Slave模式存在一个问题，当Master宕机后，Slave不会升级为Master节点，需要手动处理。
+Dledger集群
+Dledger集群解决了这个问题，通过Raft协议，当Master宕机后，从Slave中选择一个节点升级为Master节点。
+适用场景多 异步处理 把不需要立刻处理的逻辑延后处理，降低服务压力。
+流量控制 通过mq作为中转站，在高峰期，可以避免消费方被压垮，起到削峰填谷的作用。
+服务解耦 比如下单服务，涉及订单写入、发货、发送短信、写入数据平台，通过mq，把各个流程拆分到不同的服务中去，规避服务过于耦合，导致频繁上线。
+合理配置 创建topic中有以下参数
+BROKER_NAME: 选择a b，高可用，避免单一broker gg导致发送失败。 writeQueueNums: 写入队列数量。 readQueueNums: 读取队列数量。 perm: 6 同时支持读写 4 禁写 2 禁读 当随着生产方、消费方数量变化，需要调整数量
+小变大，先调整readQueueNums，然后调整writeQueueNums。 大变小，先调整writeQueueNums，然后调整readQueueNums。 常见问题 为什么会出现重复消息？ 在 MQTT 协议中，给出了三种传递消息时能够提供的服务质量标准，这三种服务质量从低到高依次是：
+At most once: 至多一次。消息在传递时，最多会被送达一次。换一个说法就是，没什么消息可靠性保证，允许丢消息。一般都是一些对消息可靠性要求不太高的监控场景使用，比如每分钟上报一次机房温度数据，可以接受数据少量丢失。
+At least once: 至少一次。消息在传递时，至少会被送达一次。也就是说，不允许丢消息，但是允许有少量重复消息出现。
+Exactly once：恰好一次。消息在传递时，只会被送达一次，不允许丢失也不允许重复，这个是最高的等级。
+这个服务质量标准不仅适用于 MQTT，对所有的消息队列都是适用的。我们现在常用的绝大部分消息队列提供的服务质量都是 At least once，包括 RocketMQ、RabbitMQ 和 Kafka 都是这样。也就是说，消息队列很难保证消息不重复。</description>
+    </item>
+    
+    <item>
+      <title>spring cloud gateway &#43; eureka &#43; apollo</title>
+      <link>https://creazysnail.github.io/post/spring-cloud-gateway-&#43;-eureka-&#43;-apollo/</link>
+      <pubDate>Sun, 25 Apr 2021 21:42:53 +0800</pubDate>
+      
+      <guid>https://creazysnail.github.io/post/spring-cloud-gateway-&#43;-eureka-&#43;-apollo/</guid>
+      <description>maven  &amp;lt;parent&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-boot-starter-parent&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;2.2.11.RELEASE&amp;lt;/version&amp;gt; &amp;lt;relativePath/&amp;gt; &amp;lt;/parent&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-boot-starter-actuator&amp;lt;/artifactId&amp;gt; &amp;lt;/dependency&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-starter-gateway&amp;lt;/artifactId&amp;gt; &amp;lt;/dependency&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-starter-netflix-eureka-client&amp;lt;/artifactId&amp;gt; &amp;lt;/dependency&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;cn.hutool&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;hutool-all&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;5.5.2&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;com.ctrip.framework.apollo&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;apollo-client&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;1.4.0&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 配置信息 # eureka拉取配置 spring.cloud.gateway.discovery.locator.enabled=true # eureka上service id转小写，以便匹配 spring.cloud.gateway.discovery.locator.lower-case-service-id=true eureka.client.service-url.defaultZone=xxx # apollo配置 apollo.bootstrap.enabled=true apollo.bootstrap.namespaces=xxx apollo.meta=xxx # META-INF下app.properties配置 app.id=xxx # 超时时间设置 spring.cloud.gateway.httpclient.connect-timeout=10000 spring.cloud.gateway.httpclient.response-timeout=10000 异常处理 @Configuration(proxyBeanMethods = false) @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE) @ConditionalOnClass(WebFluxConfigurer.class) @AutoConfigureBefore(WebFluxAutoConfiguration.class) @EnableConfigurationProperties({ServerProperties.class, ResourceProperties.class}) public class CustomErrorWebFluxAutoConfiguration { private final ServerProperties serverProperties; public CustomErrorWebFluxAutoConfiguration(ServerProperties serverProperties) { this.</description>
+    </item>
+    
     <item>
       <title>Disruptor使用</title>
       <link>https://creazysnail.github.io/post/disruptor%E4%BD%BF%E7%94%A8/</link>

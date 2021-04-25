@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>spring cloud gateway &#43; eureka &#43; apollo // creazy snail</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.82.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="creazy snail" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="https://creazysnail.github.io/css/main.min.88e7083eff65effb7485b6e6f38d10afbec25093a6fac42d734ce9024d3defbd.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="spring cloud gateway &#43; eureka &#43; apollo"/>
+<meta name="twitter:description" content="maven  &lt;parent&gt; &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt; &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt; &lt;version&gt;2.2.11.RELEASE&lt;/version&gt; &lt;relativePath/&gt; &lt;/parent&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt; &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt; &lt;artifactId&gt;spring-cloud-starter-gateway&lt;/artifactId&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt; &lt;artifactId&gt;spring-cloud-starter-netflix-eureka-client&lt;/artifactId&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;cn.hutool&lt;/groupId&gt; &lt;artifactId&gt;hutool-all&lt;/artifactId&gt; &lt;version&gt;5.5.2&lt;/version&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;com.ctrip.framework.apollo&lt;/groupId&gt; &lt;artifactId&gt;apollo-client&lt;/artifactId&gt; &lt;version&gt;1.4.0&lt;/version&gt; &lt;/dependency&gt; 配置信息 # eureka拉取配置 spring.cloud.gateway.discovery.locator.enabled=true # eureka上service id转小写，以便匹配 spring.cloud.gateway.discovery.locator.lower-case-service-id=true eureka.client.service-url.defaultZone=xxx # apollo配置 apollo.bootstrap.enabled=true apollo.bootstrap.namespaces=xxx apollo.meta=xxx # META-INF下app.properties配置 app.id=xxx # 超时时间设置 spring.cloud.gateway.httpclient.connect-timeout=10000 spring.cloud.gateway.httpclient.response-timeout=10000 异常处理 @Configuration(proxyBeanMethods = false) @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE) @ConditionalOnClass(WebFluxConfigurer.class) @AutoConfigureBefore(WebFluxAutoConfiguration.class) @EnableConfigurationProperties({ServerProperties.class, ResourceProperties.class}) public class CustomErrorWebFluxAutoConfiguration { private final ServerProperties serverProperties; public CustomErrorWebFluxAutoConfiguration(ServerProperties serverProperties) { this."/>
+
+    <meta property="og:title" content="spring cloud gateway &#43; eureka &#43; apollo" />
+<meta property="og:description" content="maven  &lt;parent&gt; &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt; &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt; &lt;version&gt;2.2.11.RELEASE&lt;/version&gt; &lt;relativePath/&gt; &lt;/parent&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt; &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt; &lt;artifactId&gt;spring-cloud-starter-gateway&lt;/artifactId&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt; &lt;artifactId&gt;spring-cloud-starter-netflix-eureka-client&lt;/artifactId&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;cn.hutool&lt;/groupId&gt; &lt;artifactId&gt;hutool-all&lt;/artifactId&gt; &lt;version&gt;5.5.2&lt;/version&gt; &lt;/dependency&gt; &lt;dependency&gt; &lt;groupId&gt;com.ctrip.framework.apollo&lt;/groupId&gt; &lt;artifactId&gt;apollo-client&lt;/artifactId&gt; &lt;version&gt;1.4.0&lt;/version&gt; &lt;/dependency&gt; 配置信息 # eureka拉取配置 spring.cloud.gateway.discovery.locator.enabled=true # eureka上service id转小写，以便匹配 spring.cloud.gateway.discovery.locator.lower-case-service-id=true eureka.client.service-url.defaultZone=xxx # apollo配置 apollo.bootstrap.enabled=true apollo.bootstrap.namespaces=xxx apollo.meta=xxx # META-INF下app.properties配置 app.id=xxx # 超时时间设置 spring.cloud.gateway.httpclient.connect-timeout=10000 spring.cloud.gateway.httpclient.response-timeout=10000 异常处理 @Configuration(proxyBeanMethods = false) @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE) @ConditionalOnClass(WebFluxConfigurer.class) @AutoConfigureBefore(WebFluxAutoConfiguration.class) @EnableConfigurationProperties({ServerProperties.class, ResourceProperties.class}) public class CustomErrorWebFluxAutoConfiguration { private final ServerProperties serverProperties; public CustomErrorWebFluxAutoConfiguration(ServerProperties serverProperties) { this." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://creazysnail.github.io/post/spring-cloud-gateway-&#43;-eureka-&#43;-apollo/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-04-25T21:42:53&#43;08:00" />
+<meta property="article:modified_time" content="2021-04-25T21:42:53&#43;08:00" />
+
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://creazysnail.github.io"><img class="app-header-avatar" src="/avatar.jpg" alt="creazy snail" /></a>
+      <h1>creazy snail</h1>
+      <p>分享知识</p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">spring cloud gateway &#43; eureka &#43; apollo</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 25, 2021
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <h1 id="maven">maven</h1>
+<pre><code>    &lt;parent&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+        &lt;version&gt;2.2.11.RELEASE&lt;/version&gt;
+        &lt;relativePath/&gt;
+    &lt;/parent&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-cloud-starter-gateway&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-cloud-starter-netflix-eureka-client&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;cn.hutool&lt;/groupId&gt;
+            &lt;artifactId&gt;hutool-all&lt;/artifactId&gt;
+            &lt;version&gt;5.5.2&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.ctrip.framework.apollo&lt;/groupId&gt;
+            &lt;artifactId&gt;apollo-client&lt;/artifactId&gt;
+            &lt;version&gt;1.4.0&lt;/version&gt;
+        &lt;/dependency&gt;
+</code></pre><h1 id="配置信息">配置信息</h1>
+<pre><code># eureka拉取配置
+spring.cloud.gateway.discovery.locator.enabled=true
+# eureka上service id转小写，以便匹配
+spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+eureka.client.service-url.defaultZone=xxx
+
+# apollo配置
+apollo.bootstrap.enabled=true
+apollo.bootstrap.namespaces=xxx
+apollo.meta=xxx
+
+# META-INF下app.properties配置
+app.id=xxx
+
+# 超时时间设置
+spring.cloud.gateway.httpclient.connect-timeout=10000
+spring.cloud.gateway.httpclient.response-timeout=10000
+</code></pre><h1 id="异常处理">异常处理</h1>
+<pre><code>@Configuration(proxyBeanMethods = false)
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+@ConditionalOnClass(WebFluxConfigurer.class)
+@AutoConfigureBefore(WebFluxAutoConfiguration.class)
+@EnableConfigurationProperties({ServerProperties.class, ResourceProperties.class})
+public class CustomErrorWebFluxAutoConfiguration {
+
+    private final ServerProperties serverProperties;
+
+    public CustomErrorWebFluxAutoConfiguration(ServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(value = ErrorWebExceptionHandler.class, search = SearchStrategy.CURRENT)
+    @Order(-1)
+    public ErrorWebExceptionHandler errorWebExceptionHandler(ErrorAttributes errorAttributes,
+                                                             ResourceProperties resourceProperties, ObjectProvider&lt;ViewResolver&gt; viewResolvers,
+                                                             ServerCodecConfigurer serverCodecConfigurer, ApplicationContext applicationContext) {
+        JsonErrorWebExceptionHandler exceptionHandler = new JsonErrorWebExceptionHandler(errorAttributes,
+                resourceProperties, this.serverProperties.getError(), applicationContext);
+        exceptionHandler.setViewResolvers(viewResolvers.orderedStream().collect(Collectors.toList()));
+        exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
+        exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());
+        return exceptionHandler;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(value = ErrorAttributes.class, search = SearchStrategy.CURRENT)
+    public DefaultErrorAttributes errorAttributes() {
+        return new DefaultErrorAttributes(this.serverProperties.getError().isIncludeException());
+    }
+}
+
+@Slf4j
+public class JsonErrorWebExceptionHandler extends AbstractErrorWebExceptionHandler {
+
+    private final ErrorProperties errorProperties;
+
+    public JsonErrorWebExceptionHandler(ErrorAttributes errorAttributes, ResourceProperties resourceProperties,
+                                        ErrorProperties errorProperties, ApplicationContext applicationContext) {
+        super(errorAttributes, resourceProperties, applicationContext);
+        this.errorProperties = errorProperties;
+    }
+
+    @Override
+    protected RouterFunction&lt;ServerResponse&gt; getRoutingFunction(ErrorAttributes errorAttributes) {
+        return RouterFunctions.route(RequestPredicates.all(), this::renderErrorResponse);
+    }
+
+    protected Mono&lt;ServerResponse&gt; renderErrorResponse(ServerRequest request) {
+        boolean includeStackTrace = isIncludeStackTrace(request, MediaType.TEXT_HTML);
+        Map&lt;String, Object&gt; error = getErrorAttributes(request, includeStackTrace);
+        int errorStatus = getHttpStatus(error);
+        Mono&lt;ServerResponse&gt; body = ServerResponse.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(&quot;{\&quot;code\&quot;:200005,\&quot;msg\&quot;:\&quot;操作太频繁，请稍后再试！\&quot;}&quot;));
+        return body;
+    }
+
+    protected boolean isIncludeStackTrace(ServerRequest request, MediaType produces) {
+        ErrorProperties.IncludeStacktrace include = this.errorProperties.getIncludeStacktrace();
+        if (include == ErrorProperties.IncludeStacktrace.ALWAYS) {
+            return true;
+        }
+        if (include == ErrorProperties.IncludeStacktrace.ON_TRACE_PARAM) {
+            return isTraceEnabled(request);
+        }
+        return false;
+    }
+
+    protected int getHttpStatus(Map&lt;String, Object&gt; errorAttributes) {
+        return (int) errorAttributes.get(&quot;status&quot;);
+    }
+}
+</code></pre><h1 id="apollo动态获取配置">apollo动态获取配置</h1>
+<pre><code>@Component
+@Log
+public class ApolloConfig {
+
+    @ApolloConfigChangeListener({GatewayCons.APOLLO_PREFIX}) // 动态监听apollo配置修改
+    private void dealOnChange(ConfigChangeEvent changeEvent) {
+        Set&lt;String&gt; keys = changeEvent.changedKeys();
+        Map&lt;String, ApolloRepository&gt; beans = SpringUtil.getApplicationContext().getBeansOfType(ApolloRepository.class);
+        for (String key : keys) {
+            for (ApolloRepository repository : beans.values()) {
+                if (key.equals(repository.getName())) {
+                    repository.changeDeal();
+                }
+            }
+        }
+    }
+}
+</code></pre><h1 id="netty添加自定义指标">Netty添加自定义指标</h1>
+<pre><code>@Controller
+@ManagedResource(objectName=&quot;Tomcat:type=GlobalRequestProcessor,name=\&quot;http-nio-8080\&quot;&quot;)
+public class NettyBean {
+
+    public static final AtomicDouble REQUEST_COUNT = new AtomicDouble();
+
+    public static final AtomicDouble PROCESS_TIME = new AtomicDouble();
+
+    @ManagedAttribute
+    public double getRequestCount() {
+        return REQUEST_COUNT.doubleValue();
+    }
+
+    @ManagedAttribute
+    public double getProcessingTime() {
+        return PROCESS_TIME.doubleValue();
+    }
+}
+</code></pre><h1 id="option请求支持">option请求支持</h1>
+<pre><code>@Component
+@Order(1)
+@Log
+public class OptionsFilter implements GlobalFilter {
+
+    @Override
+    public Mono&lt;Void&gt; filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
+        if (CorsUtils.isCorsRequest(request)) {
+            log.info(&quot;cors request. &quot; + HttpUtil.GET_TRACE_ID(exchange));
+            ServerHttpResponse response = exchange.getResponse();
+            HttpHeaders headers = response.getHeaders();
+            HttpUtil.CORS_HEADERS.forEach((key, val) -&gt; headers.add(key, val));
+            if (request.getMethod() == HttpMethod.OPTIONS) {
+                response.setStatusCode(HttpStatus.OK);
+                return Mono.empty();
+            }
+        }
+        return chain.filter(exchange);
+    }
+}
+</code></pre>
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>

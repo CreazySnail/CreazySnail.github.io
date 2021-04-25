@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <title>RocketMQ小结 // creazy snail</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.82.1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="creazy snail" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="https://creazysnail.github.io/css/main.min.88e7083eff65effb7485b6e6f38d10afbec25093a6fac42d734ce9024d3defbd.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RocketMQ小结"/>
+<meta name="twitter:description" content="背景: 最近在写公司内部的RocketMQ开发指南，特记录一些感想。
+ 结构简单，服务高可用 
+纵观RocketMQ的整体架构图，只有NameServer BrokerServer 2个角色。
+NameServer NameServer是一个非常简单的Topic路由注册中心，其角色类似Dubbo中的zookeeper，支持Broker的动态注册与发现。主要包括两个功能：Broker管理，NameServer接受Broker集群的注册信息并且保存下来作为路由信息的基本数据。然后提供心跳检测机制，检查Broker是否还存活；路由信息管理，每个NameServer将保存关于Broker集群的整个路由信息和用于客户端查询的队列信息。然后Producer和Conumser通过NameServer就可以知道整个Broker集群的路由信息，从而进行消息的投递和消费。NameServer通常也是集群的方式部署，各实例间相互不进行信息通讯。Broker是向每一台NameServer注册自己的路由信息，所以每一个NameServer实例上面都保存一份完整的路由信息。当某个NameServer因某种原因下线了，Broker仍然可以向其它NameServer同步其路由信息，Producer,Consumer仍然可以动态感知Broker的路由的信息。
+BrokerServer Broker主要负责消息的存储、投递和查询以及服务高可用保证。
+如何保证服务高可用 NameServer部署多个节点，只要有&gt;=1个节点存活，服务正常。
+Broker采用多Master-Slave模式，只要&gt;=1个Master节点存活，服务正常。
+NameServer存在的问题 消费方、发送方、Broker都要和每一个NameServer交互，NameServer数量越大，交互越多，幸好RocketMQ集群规模不大，所以此问题可以忽略。
+Dledger集群 传统的Broker Master-Slave模式存在一个问题，当Master宕机后，Slave不会升级为Master节点，需要手动处理。
+Dledger集群
+Dledger集群解决了这个问题，通过Raft协议，当Master宕机后，从Slave中选择一个节点升级为Master节点。
+适用场景多 异步处理 把不需要立刻处理的逻辑延后处理，降低服务压力。
+流量控制 通过mq作为中转站，在高峰期，可以避免消费方被压垮，起到削峰填谷的作用。
+服务解耦 比如下单服务，涉及订单写入、发货、发送短信、写入数据平台，通过mq，把各个流程拆分到不同的服务中去，规避服务过于耦合，导致频繁上线。
+合理配置 创建topic中有以下参数
+BROKER_NAME: 选择a b，高可用，避免单一broker gg导致发送失败。 writeQueueNums: 写入队列数量。 readQueueNums: 读取队列数量。 perm: 6 同时支持读写 4 禁写 2 禁读 当随着生产方、消费方数量变化，需要调整数量
+小变大，先调整readQueueNums，然后调整writeQueueNums。 大变小，先调整writeQueueNums，然后调整readQueueNums。 常见问题 为什么会出现重复消息？ 在 MQTT 协议中，给出了三种传递消息时能够提供的服务质量标准，这三种服务质量从低到高依次是：
+At most once: 至多一次。消息在传递时，最多会被送达一次。换一个说法就是，没什么消息可靠性保证，允许丢消息。一般都是一些对消息可靠性要求不太高的监控场景使用，比如每分钟上报一次机房温度数据，可以接受数据少量丢失。
+At least once: 至少一次。消息在传递时，至少会被送达一次。也就是说，不允许丢消息，但是允许有少量重复消息出现。
+Exactly once：恰好一次。消息在传递时，只会被送达一次，不允许丢失也不允许重复，这个是最高的等级。
+这个服务质量标准不仅适用于 MQTT，对所有的消息队列都是适用的。我们现在常用的绝大部分消息队列提供的服务质量都是 At least once，包括 RocketMQ、RabbitMQ 和 Kafka 都是这样。也就是说，消息队列很难保证消息不重复。"/>
+
+    <meta property="og:title" content="RocketMQ小结" />
+<meta property="og:description" content="背景: 最近在写公司内部的RocketMQ开发指南，特记录一些感想。
+ 结构简单，服务高可用 
+纵观RocketMQ的整体架构图，只有NameServer BrokerServer 2个角色。
+NameServer NameServer是一个非常简单的Topic路由注册中心，其角色类似Dubbo中的zookeeper，支持Broker的动态注册与发现。主要包括两个功能：Broker管理，NameServer接受Broker集群的注册信息并且保存下来作为路由信息的基本数据。然后提供心跳检测机制，检查Broker是否还存活；路由信息管理，每个NameServer将保存关于Broker集群的整个路由信息和用于客户端查询的队列信息。然后Producer和Conumser通过NameServer就可以知道整个Broker集群的路由信息，从而进行消息的投递和消费。NameServer通常也是集群的方式部署，各实例间相互不进行信息通讯。Broker是向每一台NameServer注册自己的路由信息，所以每一个NameServer实例上面都保存一份完整的路由信息。当某个NameServer因某种原因下线了，Broker仍然可以向其它NameServer同步其路由信息，Producer,Consumer仍然可以动态感知Broker的路由的信息。
+BrokerServer Broker主要负责消息的存储、投递和查询以及服务高可用保证。
+如何保证服务高可用 NameServer部署多个节点，只要有&gt;=1个节点存活，服务正常。
+Broker采用多Master-Slave模式，只要&gt;=1个Master节点存活，服务正常。
+NameServer存在的问题 消费方、发送方、Broker都要和每一个NameServer交互，NameServer数量越大，交互越多，幸好RocketMQ集群规模不大，所以此问题可以忽略。
+Dledger集群 传统的Broker Master-Slave模式存在一个问题，当Master宕机后，Slave不会升级为Master节点，需要手动处理。
+Dledger集群
+Dledger集群解决了这个问题，通过Raft协议，当Master宕机后，从Slave中选择一个节点升级为Master节点。
+适用场景多 异步处理 把不需要立刻处理的逻辑延后处理，降低服务压力。
+流量控制 通过mq作为中转站，在高峰期，可以避免消费方被压垮，起到削峰填谷的作用。
+服务解耦 比如下单服务，涉及订单写入、发货、发送短信、写入数据平台，通过mq，把各个流程拆分到不同的服务中去，规避服务过于耦合，导致频繁上线。
+合理配置 创建topic中有以下参数
+BROKER_NAME: 选择a b，高可用，避免单一broker gg导致发送失败。 writeQueueNums: 写入队列数量。 readQueueNums: 读取队列数量。 perm: 6 同时支持读写 4 禁写 2 禁读 当随着生产方、消费方数量变化，需要调整数量
+小变大，先调整readQueueNums，然后调整writeQueueNums。 大变小，先调整writeQueueNums，然后调整readQueueNums。 常见问题 为什么会出现重复消息？ 在 MQTT 协议中，给出了三种传递消息时能够提供的服务质量标准，这三种服务质量从低到高依次是：
+At most once: 至多一次。消息在传递时，最多会被送达一次。换一个说法就是，没什么消息可靠性保证，允许丢消息。一般都是一些对消息可靠性要求不太高的监控场景使用，比如每分钟上报一次机房温度数据，可以接受数据少量丢失。
+At least once: 至少一次。消息在传递时，至少会被送达一次。也就是说，不允许丢消息，但是允许有少量重复消息出现。
+Exactly once：恰好一次。消息在传递时，只会被送达一次，不允许丢失也不允许重复，这个是最高的等级。
+这个服务质量标准不仅适用于 MQTT，对所有的消息队列都是适用的。我们现在常用的绝大部分消息队列提供的服务质量都是 At least once，包括 RocketMQ、RabbitMQ 和 Kafka 都是这样。也就是说，消息队列很难保证消息不重复。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://creazysnail.github.io/post/rocketmq%E5%B0%8F%E7%BB%93/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-04-25T21:43:56&#43;08:00" />
+<meta property="article:modified_time" content="2021-04-25T21:43:56&#43;08:00" />
+
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://creazysnail.github.io"><img class="app-header-avatar" src="/avatar.jpg" alt="creazy snail" /></a>
+      <h1>creazy snail</h1>
+      <p>分享知识</p>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">RocketMQ小结</h1>
+      <div class="post-meta">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Apr 25, 2021
+        </div>
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <blockquote>
+<p>背景: 最近在写公司内部的RocketMQ开发指南，特记录一些感想。</p>
+</blockquote>
+<h1 id="结构简单服务高可用">结构简单，服务高可用</h1>
+<p><a href="https://imgtu.com/i/cXrWtK"><img src="https://z3.ax1x.com/2021/04/23/cXrWtK.png" alt="cXrWtK.png"></a></p>
+<p>纵观RocketMQ的整体架构图，只有NameServer BrokerServer 2个角色。</p>
+<h2 id="nameserver">NameServer</h2>
+<p>NameServer是一个非常简单的Topic路由注册中心，其角色类似Dubbo中的zookeeper，支持Broker的动态注册与发现。主要包括两个功能：Broker管理，NameServer接受Broker集群的注册信息并且保存下来作为路由信息的基本数据。然后提供心跳检测机制，检查Broker是否还存活；路由信息管理，每个NameServer将保存关于Broker集群的整个路由信息和用于客户端查询的队列信息。然后Producer和Conumser通过NameServer就可以知道整个Broker集群的路由信息，从而进行消息的投递和消费。NameServer通常也是集群的方式部署，各实例间相互不进行信息通讯。Broker是向每一台NameServer注册自己的路由信息，所以每一个NameServer实例上面都保存一份完整的路由信息。当某个NameServer因某种原因下线了，Broker仍然可以向其它NameServer同步其路由信息，Producer,Consumer仍然可以动态感知Broker的路由的信息。</p>
+<h2 id="brokerserver">BrokerServer</h2>
+<p>Broker主要负责消息的存储、投递和查询以及服务高可用保证。</p>
+<h2 id="如何保证服务高可用">如何保证服务高可用</h2>
+<p>NameServer部署多个节点，只要有&gt;=1个节点存活，服务正常。</p>
+<p>Broker采用多Master-Slave模式，只要&gt;=1个Master节点存活，服务正常。</p>
+<h2 id="nameserver存在的问题">NameServer存在的问题</h2>
+<p>消费方、发送方、Broker都要和每一个NameServer交互，NameServer数量越大，交互越多，幸好RocketMQ集群规模不大，所以此问题可以忽略。</p>
+<h2 id="dledger集群">Dledger集群</h2>
+<p>传统的Broker Master-Slave模式存在一个问题，当Master宕机后，Slave不会升级为Master节点，需要手动处理。</p>
+<p><a href="https://github.com/apache/rocketmq/blob/master/docs/cn/dledger/deploy_guide.md">Dledger集群</a></p>
+<p>Dledger集群解决了这个问题，通过Raft协议，当Master宕机后，从Slave中选择一个节点升级为Master节点。</p>
+<h1 id="适用场景多">适用场景多</h1>
+<h2 id="异步处理">异步处理</h2>
+<p>把不需要立刻处理的逻辑延后处理，降低服务压力。</p>
+<h2 id="流量控制">流量控制</h2>
+<p>通过mq作为中转站，在高峰期，可以避免消费方被压垮，起到削峰填谷的作用。</p>
+<h2 id="服务解耦">服务解耦</h2>
+<p>比如下单服务，涉及订单写入、发货、发送短信、写入数据平台，通过mq，把各个流程拆分到不同的服务中去，规避服务过于耦合，导致频繁上线。</p>
+<h1 id="合理配置">合理配置</h1>
+<p>创建topic中有以下参数</p>
+<pre><code>BROKER_NAME: 选择a b，高可用，避免单一broker gg导致发送失败。
+
+writeQueueNums: 写入队列数量。
+
+readQueueNums: 读取队列数量。
+
+perm: 6 同时支持读写  4 禁写  2 禁读
+</code></pre><p>当随着生产方、消费方数量变化，需要调整数量</p>
+<pre><code>小变大，先调整readQueueNums，然后调整writeQueueNums。
+
+大变小，先调整writeQueueNums，然后调整readQueueNums。
+</code></pre><h1 id="常见问题">常见问题</h1>
+<h2 id="为什么会出现重复消息">为什么会出现重复消息？</h2>
+<p>在 MQTT 协议中，给出了三种传递消息时能够提供的服务质量标准，这三种服务质量从低到高依次是：</p>
+<p>At most once: 至多一次。消息在传递时，最多会被送达一次。换一个说法就是，没什么消息可靠性保证，允许丢消息。一般都是一些对消息可靠性要求不太高的监控场景使用，比如每分钟上报一次机房温度数据，可以接受数据少量丢失。</p>
+<p>At least once: 至少一次。消息在传递时，至少会被送达一次。也就是说，不允许丢消息，但是允许有少量重复消息出现。</p>
+<p>Exactly once：恰好一次。消息在传递时，只会被送达一次，不允许丢失也不允许重复，这个是最高的等级。</p>
+<p>这个服务质量标准不仅适用于 MQTT，对所有的消息队列都是适用的。我们现在常用的绝大部分消息队列提供的服务质量都是 At least once，包括 RocketMQ、RabbitMQ 和 Kafka 都是这样。也就是说，消息队列很难保证消息不重复。</p>
+<h2 id="如何使用幂等性解决重复消息问题">如何使用幂等性解决重复消息问题？</h2>
+<p><strong>幂等  如果一个函数 f(x) 满足：f(f(x)) = f(x)，则函数 f(x) 满足幂等性。</strong></p>
+<p>At least once + 幂等消费 = Exactly once。</p>
+<h3 id="利用数据库的唯一约束实现幂等">利用数据库的唯一约束实现幂等</h3>
+<p>比如根据mysql唯一索引，redis setnx</p>
+<h3 id="为更新的数据设置前置条件">为更新的数据设置前置条件</h3>
+<p>可以使用版本号的概念，比如if version=0 set key = val</p>
+<h3 id="记录并检查操作">记录并检查操作</h3>
+<p>在发送消息时，给每条消息指定一个全局唯一的 ID，消费时，先根据这个 ID 检查这条消息是否有被消费过，如果没有消费过，才更新数据，然后将消费状态置为已消费。</p>
+<hr>
+<p>参考文档</p>
+<p><a href="https://github.com/apache/rocketmq/tree/master/docs/cn">RocketMQ开发者指南</a></p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
